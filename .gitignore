@@ -129,4 +129,13 @@ obj-*/
 debian/autoreconf.*
 debian/*-stamp
 
+# Internal development files
 CLAUDE.md
+**/CLAUDE.md
+.project_structure
+IMPLEMENTATION_STATUS.md
+DESIGN_v*.md
+*_DRAFT.md
+*_TODO.md
+*_NOTES.md
+.claude/
