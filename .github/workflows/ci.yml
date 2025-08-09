@@ -1,0 +1,166 @@
+name: Continuous Integration
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+  schedule:
+    - cron: '0 0 * * 0'  # Weekly validation
+
+jobs:
+  build-and-test:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+        compiler: [gcc, clang]
+        build_type: [Debug, Release]
+        precision: [10, 30, 60]
+        
+    name: ${{ matrix.os }}-${{ matrix.compiler }}-${{ matrix.build_type }}-P${{ matrix.precision }}
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Install Dependencies (Ubuntu)
+      if: runner.os == 'Linux'
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y build-essential cmake libgmp-dev libmpfr-dev valgrind
+        
+    - name: Install Dependencies (macOS)
+      if: runner.os == 'macOS'
+      run: |
+        brew install cmake gmp mpfr
+        
+    - name: Configure CMake
+      run: |
+        cmake -B build \
+          -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} \
+          -DCMAKE_C_COMPILER=${{ matrix.compiler }} \
+          -DCMAKE_CXX_COMPILER=${{ matrix.compiler == 'gcc' && 'g++' || 'clang++' }}
+          
+    - name: Build
+      run: cmake --build build --config ${{ matrix.build_type }} -j$(nproc 2>/dev/null || sysctl -n hw.ncpu)
+      
+    - name: Run Unit Tests
+      run: |
+        cd build
+        ctest --output-on-failure --verbose
+        
+    - name: Run Mathematical Validation Tests
+      run: |
+        cd build
+        ./test_gmp_wrapper
+        ./test_zp
+        ./test_qp
+        ./test_functions
+        
+    - name: Run Reid-Li Criterion Tests
+      run: |
+        cd build
+        ./milestone1_test 5 ${{ matrix.precision }}
+        ./milestone1_test 7 ${{ matrix.precision }}
+        ./milestone1_test 11 ${{ matrix.precision }}
+        
+    - name: Memory Leak Check (Linux only)
+      if: runner.os == 'Linux' && matrix.build_type == 'Debug'
+      run: |
+        cd build
+        valgrind --leak-check=full --error-exitcode=1 ./test_gmp_wrapper
+        valgrind --leak-check=full --error-exitcode=1 ./test_zp
+        valgrind --leak-check=full --error-exitcode=1 ./test_qp
+        
+  docker-validation:
+    runs-on: ubuntu-latest
+    name: Docker Build and Test
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Build Docker Image
+      run: docker build -t libadic:test .
+      
+    - name: Run Tests in Container
+      run: |
+        docker run --rm libadic:test bash -c "cd /libadic/build && cmake .. && make -j && ctest --verbose"
+        
+    - name: Validate Milestone Tests in Container
+      run: |
+        docker run --rm libadic:test bash -c "cd /libadic/build && cmake .. && make -j && ./milestone1_test 7 60"
+        
+  mathematical-proof-validation:
+    runs-on: ubuntu-latest
+    name: Mathematical Proof Verification
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Setup Environment
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y build-essential cmake libgmp-dev libmpfr-dev
+        
+    - name: Build with Maximum Precision
+      run: |
+        cmake -B build -DCMAKE_BUILD_TYPE=Release
+        cmake --build build -j$(nproc)
+        
+    - name: Verify Core Identities
+      run: |
+        cd build
+        echo "Testing Geometric Series Identity..."
+        ./test_zp | grep -q "Geometric series: (1-p) \* (1 + p + p^2 + ...) = 1"
+        
+        echo "Testing Fermat's Little Theorem..."
+        ./test_zp | grep -q "Fermat's Little Theorem"
+        
+        echo "Testing Wilson's Theorem..."
+        ./test_functions | grep -q "Wilson's Theorem"
+        
+        echo "Testing Gamma Reflection Formula..."
+        ./test_functions | grep -q "Reflection formula"
+        
+        echo "Testing Hensel's Lemma..."
+        ./test_zp | grep -q "Hensel"
+        
+    - name: Verify Convergence Properties
+      run: |
+        cd build
+        echo "Testing p-adic logarithm convergence..."
+        ./test_functions | grep -q "Convergence"
+        
+        echo "Testing series convergence radius..."
+        ./test_functions | grep -q "converges at minimal valuation"
+        
+  coverage-report:
+    runs-on: ubuntu-latest
+    name: Test Coverage Analysis
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Install Dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y build-essential cmake libgmp-dev libmpfr-dev gcovr
+        
+    - name: Build with Coverage
+      run: |
+        cmake -B build -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_FLAGS="--coverage"
+        cmake --build build -j$(nproc)
+        
+    - name: Run Tests for Coverage
+      run: |
+        cd build
+        ctest --verbose
+        ./milestone1_test 5 30
+        ./milestone1_test 7 30
+        ./milestone1_test 11 30
+        
+    - name: Generate Coverage Report
+      run: |
+        gcovr --root . --html --html-details -o coverage.html
+        gcovr --root . --print-summary

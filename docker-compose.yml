@@ -1,0 +1,12 @@
+version: '3.8'
+
+services:
+  libadic:
+    build: .
+    container_name: libadic-dev
+    volumes:
+      - .:/libadic
+    working_dir: /libadic
+    stdin_open: true
+    tty: true
+    command: /bin/bash
