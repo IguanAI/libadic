@@ -306,5 +306,4 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 *"In mathematics, the art of proposing a question must be held of higher value than solving it."* - Georg Cantor
 
-</div>#   l i b a d i c  
- 
+</div>
