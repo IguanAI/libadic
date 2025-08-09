@@ -42,6 +42,7 @@ set(LIBADIC_SOURCES
 
 # Library options
 option(BUILD_SHARED_LIBS "Build shared libraries" OFF)
+option(BUILD_PYTHON_BINDINGS "Build Python bindings" ON)
 
 # Create the library (static or shared based on BUILD_SHARED_LIBS)
 add_library(adic ${LIBADIC_SOURCES})
@@ -159,3 +160,48 @@ set(CPACK_SOURCE_IGNORE_FILES
 )
 
 include(CPack)
+
+# Python bindings
+if(BUILD_PYTHON_BINDINGS)
+    # Add pybind11
+    add_subdirectory(extern/pybind11)
+    
+    # Find Python
+    find_package(Python COMPONENTS Interpreter Development)
+    
+    if(Python_FOUND)
+        # Python binding sources
+        set(PYTHON_BINDING_SOURCES
+            python/src/libadic_python.cpp
+            python/src/bind_bigint.cpp
+            python/src/bind_zp.cpp
+            python/src/bind_qp.cpp
+            python/src/bind_padic_functions.cpp
+            python/src/bind_characters.cpp
+            python/src/bind_l_functions.cpp
+            python/src/bind_bernoulli.cpp
+            python/src/bind_modular_arith.cpp
+            python/src/bind_cyclotomic.cpp
+        )
+        
+        # Create Python module
+        pybind11_add_module(libadic_python ${PYTHON_BINDING_SOURCES})
+        
+        # Link with the main library
+        target_link_libraries(libadic_python PRIVATE adic ${GMP_LIBRARY} ${MPFR_LIBRARY})
+        
+        # Set output name (remove _python suffix)
+        set_target_properties(libadic_python PROPERTIES OUTPUT_NAME "libadic")
+        
+        # Install Python module
+        install(TARGETS libadic_python
+            LIBRARY DESTINATION ${Python_SITELIB}
+        )
+        
+        message(STATUS "Python bindings will be built")
+        message(STATUS "Python version: ${Python_VERSION}")
+        message(STATUS "Python executable: ${Python_EXECUTABLE}")
+    else()
+        message(WARNING "Python not found. Python bindings will not be built.")
+    endif()
+endif()

@@ -420,7 +420,7 @@ public:
     }
 };
 
-int main(int argc, char* argv[]) {
+int main(int /*argc*/, char* /*argv*/[]) {
     std::cout << "\n";
     std::cout << "╔════════════════════════════════════════════════╗\n";
     std::cout << "║    LIBADIC MATHEMATICAL VALIDATION SUITE      ║\n";

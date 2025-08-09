@@ -16,7 +16,7 @@ namespace libadic {
  * For p-adic computations, we use Teichmüller lifts
  */
 class DirichletCharacter {
-private:
+public:  // Made public for Python bindings
     long conductor;
     long modulus;
     long prime;
@@ -24,6 +24,8 @@ private:
     std::vector<long> generator_orders;  // Orders of generators
     std::vector<long> character_values;  // Values on generators
     mutable std::map<long, Cyclotomic> value_cache;  // Cache computed values
+    
+private:
     
     /**
      * Find generators of (Z/nZ)*
@@ -161,7 +163,7 @@ private:
     }
     
 public:
-    DirichletCharacter(long mod, long p) : modulus(mod), prime(p), conductor(mod) {
+    DirichletCharacter(long mod, long p) : conductor(mod), modulus(mod), prime(p) {
         compute_generators();
         character_values.resize(generators.size(), 0);
     }
@@ -170,7 +172,7 @@ public:
      * Create a character from its values on generators
      */
     DirichletCharacter(long mod, long p, const std::vector<long>& gen_values) 
-        : modulus(mod), prime(p), conductor(mod), character_values(gen_values) {
+        : conductor(mod), modulus(mod), prime(p), character_values(gen_values) {
         compute_generators();
         if (character_values.size() != generators.size()) {
             throw std::invalid_argument("Wrong number of generator values");
@@ -420,7 +422,7 @@ public:
      * L-function value L(s, χ) at integer s
      * For Reid-Li, we need s = 0
      */
-    Qp L_value(long s, long precision) const {
+    Qp L_value(long /*s*/, long precision) const {
         // This will be implemented in l_functions.h
         // Placeholder for now
         return Qp(prime, precision, 1);

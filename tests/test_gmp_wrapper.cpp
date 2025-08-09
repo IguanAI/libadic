@@ -20,7 +20,7 @@ void test_constructors_and_assignment() {
     BigInt d(b);
     test.assert_equal(d.to_long(), 42L, "Copy constructor");
     
-    BigInt e = std::move(BigInt(100));
+    BigInt e = BigInt(100);
     test.assert_equal(e.to_long(), 100L, "Move constructor");
     
     a = 17;

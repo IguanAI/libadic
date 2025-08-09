@@ -20,7 +20,7 @@ private:
     
     void reduce() {
         // Use the relation ζ^p = 1, so ζ^(p-1) = -1 - ζ - ... - ζ^(p-2)
-        if (coeffs.size() >= prime) {
+        if (static_cast<long>(coeffs.size()) >= prime) {
             Qp high_coeff = coeffs[prime - 1];
             coeffs.resize(prime - 1);
             
@@ -31,7 +31,7 @@ private:
         }
         
         // Ensure we have exactly p-1 coefficients
-        while (coeffs.size() < prime - 1) {
+        while (static_cast<long>(coeffs.size()) < prime - 1) {
             coeffs.push_back(Qp(prime, precision, 0));
         }
     }
@@ -84,7 +84,7 @@ public:
         }
         
         std::vector<Qp> result_coeffs(prime - 1);
-        for (size_t i = 0; i < prime - 1; ++i) {
+        for (long i = 0; i < prime - 1; ++i) {
             result_coeffs[i] = get_coeff(i) + other.get_coeff(i);
         }
         
@@ -97,7 +97,7 @@ public:
         }
         
         std::vector<Qp> result_coeffs(prime - 1);
-        for (size_t i = 0; i < prime - 1; ++i) {
+        for (long i = 0; i < prime - 1; ++i) {
             result_coeffs[i] = get_coeff(i) - other.get_coeff(i);
         }
         
@@ -113,8 +113,8 @@ public:
         std::vector<Qp> result_coeffs(2 * prime - 2, Qp(prime, new_prec, 0));
         
         // Polynomial multiplication
-        for (size_t i = 0; i < prime - 1; ++i) {
-            for (size_t j = 0; j < prime - 1; ++j) {
+        for (long i = 0; i < prime - 1; ++i) {
+            for (long j = 0; j < prime - 1; ++j) {
                 result_coeffs[i + j] += get_coeff(i) * other.get_coeff(j);
             }
         }
@@ -132,7 +132,7 @@ public:
                 
                 for (long iter = 0; iter < quotient; ++iter) {
                     // Each application of ζ^(p-1) adds -1 to all coefficients
-                    for (size_t i = 0; i < prime - 1; ++i) {
+                    for (long i = 0; i < prime - 1; ++i) {
                         result_coeffs[i] -= coeff;
                     }
                 }
@@ -149,7 +149,7 @@ public:
     
     Cyclotomic operator*(const Qp& scalar) const {
         std::vector<Qp> result_coeffs(prime - 1);
-        for (size_t i = 0; i < prime - 1; ++i) {
+        for (long i = 0; i < prime - 1; ++i) {
             result_coeffs[i] = coeffs[i] * scalar;
         }
         return Cyclotomic(prime, precision, result_coeffs);
@@ -157,7 +157,7 @@ public:
     
     Cyclotomic operator-() const {
         std::vector<Qp> result_coeffs(prime - 1);
-        for (size_t i = 0; i < prime - 1; ++i) {
+        for (long i = 0; i < prime - 1; ++i) {
             result_coeffs[i] = -coeffs[i];
         }
         return Cyclotomic(prime, precision, result_coeffs);
@@ -166,7 +166,7 @@ public:
     bool operator==(const Cyclotomic& other) const {
         if (prime != other.prime) return false;
         
-        for (size_t i = 0; i < prime - 1; ++i) {
+        for (long i = 0; i < prime - 1; ++i) {
             if (get_coeff(i) != other.get_coeff(i)) {
                 return false;
             }

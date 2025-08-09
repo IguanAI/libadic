@@ -6,6 +6,8 @@
 #include <map>
 #include <vector>
 #include <numeric>
+#include <functional>
+#include <algorithm>
 
 namespace libadic {
 
@@ -16,7 +18,7 @@ namespace libadic {
 class BernoulliNumbers {
 private:
     // Cache for regular Bernoulli numbers
-    static std::map<long, Qp> bernoulli_cache;
+    inline static std::map<long, Qp> bernoulli_cache;
     
     // Cache for generalized Bernoulli numbers
     struct CharKey {
@@ -34,7 +36,7 @@ private:
             return precision < other.precision;
         }
     };
-    static std::map<CharKey, Qp> generalized_cache;
+    inline static std::map<CharKey, Qp> generalized_cache;
     
 public:
     /**
@@ -69,7 +71,8 @@ public:
             
             Qp sum(p, precision, 0);
             for (long k = 0; k < n; ++k) {
-                BigInt binom = BigInt::binomial(n + 1, k);
+                BigInt binom = BigInt::binomial(static_cast<unsigned long>(n + 1), 
+                                               static_cast<unsigned long>(k));
                 Qp b_k = bernoulli(k, p, precision);
                 sum += Qp(p, precision, binom) * b_k;
             }
@@ -82,8 +85,8 @@ public:
         if (n > 0 && n % 2 == 0) {
             if ((n % (p - 1)) == 0) {
                 // Add p-adic correction
-                long v = p_adic_valuation(BigInt(n), BigInt(p));
-                if (v == 0) {
+                // Check if p divides n
+                if (n % p != 0) {
                     Qp correction = Qp::from_rational(1, p, p, precision);
                     result = result + correction;
                 }
@@ -141,7 +144,8 @@ public:
         Qp x_power(p, precision, 1);
         
         for (long k = n; k >= 0; --k) {
-            BigInt binom = BigInt::binomial(n, k);
+            BigInt binom = BigInt::binomial(static_cast<unsigned long>(n), 
+                                           static_cast<unsigned long>(k));
             Qp b_k = bernoulli(k, p, precision);
             result += Qp(p, precision, binom) * b_k * x_power;
             if (k > 0) {
@@ -203,10 +207,6 @@ public:
         return diff.valuation() >= 1; // Congruent mod p
     }
 };
-
-// Static member definitions
-std::map<long, Qp> BernoulliNumbers::bernoulli_cache;
-std::map<BernoulliNumbers::CharKey, Qp> BernoulliNumbers::generalized_cache;
 
 } // namespace libadic
 

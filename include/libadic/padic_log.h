@@ -24,7 +24,7 @@ private:
         }
     }
     
-    static long compute_required_terms(long p, long precision, long u_valuation) {
+    static long compute_required_terms(long /*p*/, long precision, long u_valuation) {
         if (u_valuation <= 0) {
             return precision * 2;
         }

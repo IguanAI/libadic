@@ -34,8 +34,8 @@ private:
         }
     };
     
-    static std::map<LKey, Qp> l_cache;
-    static std::map<LKey, Qp> l_derivative_cache;
+    inline static std::map<LKey, Qp> l_cache;
+    inline static std::map<LKey, Qp> l_derivative_cache;
     
 public:
     /**
@@ -142,7 +142,7 @@ public:
         return result;
     }
     
-private:
+public:  // Made public for Python bindings
     /**
      * Compute B_{1,χ} for the character χ
      */
@@ -195,7 +195,7 @@ private:
      */
     static Qp compute_positive_value(long s, const DirichletCharacter& chi, long precision) {
         long p = chi.get_prime();
-        long conductor = chi.get_conductor();
+        // long conductor = chi.get_conductor();  // Reserved for future use
         
         // Number of terms needed for precision
         long num_terms = precision * std::log(p) / std::log(2) + 10;
@@ -341,10 +341,6 @@ public:
         l_derivative_cache.clear();
     }
 };
-
-// Static member definitions
-std::map<LFunctions::LKey, Qp> LFunctions::l_cache;
-std::map<LFunctions::LKey, Qp> LFunctions::l_derivative_cache;
 
 } // namespace libadic
 
