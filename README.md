@@ -46,19 +46,113 @@ gamma = libadic.gamma_p(5, 7, 20)  # Γ_7(5)
 - [**Character Exploration**](examples/character_exploration.py) - Dirichlet character analysis
 - [**Precision Management**](examples/precision_management.py) - Precision tracking and optimization
 
-## Building from Source
+## Installation
+
+### Python Package (Recommended)
+
+```bash
+# Install from PyPI (when available)
+pip install libadic
+
+# Or build from source
+git clone https://github.com/yourusername/libadic.git
+cd libadic
+pip install .
+```
+
+### Building from Source (C++ Library + Python Bindings)
 
 ```bash
 # Install dependencies
 sudo apt-get install libgmp-dev libmpfr-dev python3-dev
 
-# Build
+# Build C++ library and Python bindings
 mkdir build && cd build
-cmake ..
+cmake -DBUILD_PYTHON_BINDINGS=ON ..
 make -j$(nproc)
 
+# Install Python module
+cd python
+pip install .
+
 # Run tests
+cd ../build && ctest --verbose
+```
+
+### C++ Only Build
+
+```bash
+# For C++ development only
+mkdir build && cd build
+cmake -DBUILD_PYTHON_BINDINGS=OFF ..
+make -j$(nproc)
 ctest --verbose
+```
+
+## Python API Usage
+
+### Basic p-adic Arithmetic
+
+```python
+import libadic
+
+# Create p-adic integers
+p = 7
+precision = 20
+x = libadic.Zp(p, precision, 42)
+y = libadic.Zp(p, precision, 13)
+
+# Arithmetic operations
+z = x + y * libadic.Zp(p, precision, 2)
+print(f"Result: {z}")
+print(f"p-adic digits: {z.digits()}")
+
+# p-adic numbers (field)
+a = libadic.Qp.from_rational(22, 7, p, precision)
+b = libadic.Qp(p, precision, 5)
+quotient = a / b
+print(f"22/7 ÷ 5 in Q_7 = {quotient}")
+```
+
+### Dirichlet Characters and L-functions
+
+```python
+# Enumerate all primitive characters mod p
+p = 11
+chars = libadic.enumerate_primitive_characters(p, p)
+print(f"Found {len(chars)} primitive characters mod {p}")
+
+# Explore character properties
+chi = chars[0]
+print(f"Character order: {chi.get_order()}")
+print(f"Is odd: {chi.is_odd()}")
+
+# Compute L-function values
+L_value = libadic.kubota_leopoldt(0, chi, precision)
+print(f"L_p(0, χ) = {L_value}")
+
+# For odd characters, compute derivative
+if chi.is_odd():
+    L_deriv = libadic.kubota_leopoldt_derivative(0, chi, precision)
+    print(f"L'_p(0, χ) = {L_deriv}")
+```
+
+### Special Functions
+
+```python
+# p-adic Gamma function
+gamma_5 = libadic.gamma_p(5, p, precision)
+print(f"Γ_7(5) = {gamma_5}")
+
+# p-adic logarithm (requires convergence condition)
+x = libadic.Qp(p, precision, 1 + p)  # x ≡ 1 (mod p)
+log_x = libadic.log_p(x)
+print(f"log_7(8) = {log_x}")
+
+# Square roots via Hensel lifting
+a = libadic.Zp(p, precision, 4)
+sqrt_a = a.sqrt()
+print(f"√4 in Z_7 = {sqrt_a}")
 ```
 
 ## Mathematical Background
