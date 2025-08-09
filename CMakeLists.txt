@@ -40,9 +40,19 @@ set(LIBADIC_SOURCES
     src/functions/bernoulli.cpp
 )
 
-# Create the library
-add_library(adic STATIC ${LIBADIC_SOURCES})
-target_link_libraries(adic ${GMP_LIBRARY} ${MPFR_LIBRARY})
+# Library options
+option(BUILD_SHARED_LIBS "Build shared libraries" OFF)
+
+# Create the library (static or shared based on BUILD_SHARED_LIBS)
+add_library(adic ${LIBADIC_SOURCES})
+target_link_libraries(adic PUBLIC ${GMP_LIBRARY} ${MPFR_LIBRARY})
+
+# Set library properties
+set_target_properties(adic PROPERTIES
+    VERSION ${PROJECT_VERSION}
+    SOVERSION 1
+    PUBLIC_HEADER "${CMAKE_SOURCE_DIR}/include/libadic/*.h"
+)
 
 # Enable testing
 enable_testing()
@@ -81,5 +91,71 @@ if(BUILD_EXAMPLES)
 endif()
 
 # Install rules
-install(TARGETS adic DESTINATION lib)
-install(DIRECTORY include/libadic DESTINATION include)
+include(GNUInstallDirs)
+install(TARGETS adic
+    EXPORT libadicTargets
+    LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+    ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+    RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+    INCLUDES DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
+)
+install(DIRECTORY include/libadic 
+    DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
+    FILES_MATCHING PATTERN "*.h"
+)
+
+# Install CMake package files
+install(EXPORT libadicTargets
+    FILE libadicTargets.cmake
+    NAMESPACE libadic::
+    DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/libadic
+)
+
+# Create package config file
+include(CMakePackageConfigHelpers)
+configure_package_config_file(
+    "${CMAKE_CURRENT_SOURCE_DIR}/cmake/libadicConfig.cmake.in"
+    "${CMAKE_CURRENT_BINARY_DIR}/libadicConfig.cmake"
+    INSTALL_DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/libadic
+)
+
+write_basic_package_version_file(
+    "${CMAKE_CURRENT_BINARY_DIR}/libadicConfigVersion.cmake"
+    VERSION ${PROJECT_VERSION}
+    COMPATIBILITY SameMajorVersion
+)
+
+install(FILES
+    "${CMAKE_CURRENT_BINARY_DIR}/libadicConfig.cmake"
+    "${CMAKE_CURRENT_BINARY_DIR}/libadicConfigVersion.cmake"
+    DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/libadic
+)
+
+# CPack configuration for creating packages
+set(CPACK_PACKAGE_NAME "libadic")
+set(CPACK_PACKAGE_VERSION ${PROJECT_VERSION})
+set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "High-performance p-adic arithmetic library")
+set(CPACK_PACKAGE_DESCRIPTION "The only implementation of the Reid-Li criterion for the Riemann Hypothesis")
+set(CPACK_PACKAGE_VENDOR "Reid-Li Team")
+set(CPACK_PACKAGE_CONTACT "asmith@example.com")
+set(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_SOURCE_DIR}/LICENSE")
+set(CPACK_RESOURCE_FILE_README "${CMAKE_SOURCE_DIR}/README.md")
+
+# Debian specific
+set(CPACK_DEBIAN_PACKAGE_MAINTAINER "A. Smith <asmith@example.com>")
+set(CPACK_DEBIAN_PACKAGE_DEPENDS "libgmp10, libmpfr6")
+set(CPACK_DEBIAN_PACKAGE_SECTION "libs")
+set(CPACK_DEBIAN_PACKAGE_PRIORITY "optional")
+
+# RPM specific
+set(CPACK_RPM_PACKAGE_LICENSE "MIT")
+set(CPACK_RPM_PACKAGE_GROUP "Development/Libraries")
+set(CPACK_RPM_PACKAGE_REQUIRES "gmp, mpfr")
+
+# Source package
+set(CPACK_SOURCE_GENERATOR "TGZ;ZIP")
+set(CPACK_SOURCE_IGNORE_FILES
+    "/build/;/.git/;/.github/;/.vscode/;/\\\\.DS_Store"
+)
+
+include(CPack)

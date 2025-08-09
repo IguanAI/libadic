@@ -1,0 +1,4 @@
+usr/include/*
+usr/lib/*/libadic.so
+usr/lib/*/libadic.a
+usr/lib/*/cmake/libadic/*

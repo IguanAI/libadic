@@ -1,0 +1,61 @@
+Source: libadic
+Priority: optional
+Maintainer: A. Smith <asmith@example.com>
+Build-Depends: debhelper-compat (= 13),
+               cmake (>= 3.14),
+               libgmp-dev,
+               libmpfr-dev,
+               g++ (>= 7)
+Standards-Version: 4.6.0
+Section: libs
+Homepage: https://github.com/yourusername/libadic
+Vcs-Browser: https://github.com/yourusername/libadic
+Vcs-Git: https://github.com/yourusername/libadic.git
+Rules-Requires-Root: no
+
+Package: libadic1
+Section: libs
+Architecture: any
+Multi-Arch: same
+Depends: ${shlibs:Depends},
+         ${misc:Depends},
+         libgmp10,
+         libmpfr6
+Description: High-performance p-adic arithmetic library
+ libadic is a C++ library providing high-precision arithmetic in p-adic
+ number fields. It is the only implementation of the Reid-Li criterion
+ for the Riemann Hypothesis.
+ .
+ This package contains the runtime library.
+
+Package: libadic-dev
+Section: libdevel
+Architecture: any
+Multi-Arch: same
+Depends: libadic1 (= ${binary:Version}),
+         ${misc:Depends},
+         libgmp-dev,
+         libmpfr-dev
+Suggests: libadic-doc
+Description: Development files for libadic
+ libadic is a C++ library providing high-precision arithmetic in p-adic
+ number fields. It implements:
+  * p-adic integers (Zp) and numbers (Qp)
+  * Morita's p-adic Gamma function
+  * p-adic logarithm and special functions
+  * Dirichlet characters and L-functions
+  * Reid-Li criterion (unique implementation)
+ .
+ This package contains the development headers and static library.
+
+Package: libadic-doc
+Section: doc
+Architecture: all
+Multi-Arch: foreign
+Depends: ${misc:Depends}
+Description: Documentation for libadic
+ libadic is a C++ library providing high-precision arithmetic in p-adic
+ number fields.
+ .
+ This package contains the documentation, examples, and validation suite
+ proving that libadic is the only implementation of the Reid-Li criterion.

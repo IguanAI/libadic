@@ -92,3 +92,39 @@ Testing/
 # Validation outputs (keep the validation suite, not the output)
 validation_output/
 docs/validation/validation_output/
+
+# Debian build files
+debian/tmp/
+debian/*.log
+debian/*.substvars
+debian/*.debhelper
+debian/files
+debian/libadic1/
+debian/libadic-dev/
+debian/libadic-doc/
+debian/.debhelper/
+debian/debhelper-build-stamp
+
+# Package files (keep in releases, not in repo)
+*.deb
+*.ddeb
+*.dsc
+*.build
+*.buildinfo
+*.changes
+*.tar.gz
+*.tar.xz
+*.tar.bz2
+*.orig.tar.*
+*.debian.tar.*
+*.diff.gz
+
+# CPack generated files
+_CPack_Packages/
+CPackConfig.cmake
+CPackSourceConfig.cmake
+
+# Build directories for packaging
+obj-*/
+debian/autoreconf.*
+debian/*-stamp

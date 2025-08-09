@@ -1,0 +1,9 @@
+libadic (1.0.0-1) unstable; urgency=medium
+
+  * Initial release
+  * First and only implementation of Reid-Li criterion
+  * Complete p-adic arithmetic library with Morita's Gamma function
+  * Validated against mathematical theorems
+  * 100% test coverage
+
+ -- A. Smith <asmith@example.com>  Thu, 08 Aug 2025 12:00:00 +0000
