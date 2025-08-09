@@ -128,3 +128,5 @@ CPackSourceConfig.cmake
 obj-*/
 debian/autoreconf.*
 debian/*-stamp
+
+CLAUDE.md
