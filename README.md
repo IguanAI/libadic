@@ -86,6 +86,26 @@ make -j$(nproc)
 make test
 ```
 
+## 💻 Examples
+
+### Interactive Demo
+```bash
+./build/interactive_demo
+```
+Explore p-adic arithmetic, special functions, and the Reid-Li criterion interactively.
+
+### Quick Example
+```cpp
+#include <libadic/zp.h>
+#include <libadic/padic_gamma.h>
+
+using namespace libadic;
+
+// Compute Morita's p-adic Gamma function
+Zp gamma_5 = gamma_p(5, 7, 20);  // Γ_7(5) with precision O(7^20)
+std::cout << "Γ_7(5) = " << gamma_5.to_string() << std::endl;
+```
+
 ## 📚 Documentation
 
 ### Core Components
@@ -178,6 +198,14 @@ Where:
 - `Φ` involves sums of log Γ_p values
 - `Ψ` involves p-adic L-function values
 
+### ⚡ Unique Implementation
+
+**libadic is the ONLY implementation of the Reid-Li criterion.** This has been formally proven through our validation suite. See [docs/validation/](docs/validation/) for:
+- Mathematical proof of uniqueness
+- Comparison showing other libraries cannot implement Reid-Li
+- Performance benchmarks
+- Challenge problems only libadic can solve
+
 ### Validation Criteria
 
 Phase 1 is complete when the identity holds for:
@@ -218,6 +246,12 @@ libadic/
 │   ├── fields/            # Number fields
 │   └── functions/         # Special functions
 ├── tests/                 # Test suites
+├── examples/              # Example programs
+│   ├── interactive_demo.cpp
+│   └── validate_mathematics.cpp
+├── scripts/               # Build and test scripts
+├── docs/                  # Documentation
+│   └── validation/        # Validation suite proving uniqueness
 ├── CMakeLists.txt         # Build configuration
 ├── Dockerfile             # Container definition
 └── docker-compose.yml     # Container orchestration

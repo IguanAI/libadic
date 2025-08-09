@@ -81,5 +81,14 @@ Desktop.ini
 *#
 .#*
 
-# Claude context file
-CLAUDE.md
+# CMake generated files
+CMakeCache.txt
+CMakeFiles/
+cmake_install.cmake
+CTestTestfile.cmake
+Makefile
+Testing/
+
+# Validation outputs (keep the validation suite, not the output)
+validation_output/
+docs/validation/validation_output/

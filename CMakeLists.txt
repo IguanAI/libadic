@@ -69,14 +69,16 @@ add_executable(milestone1_test tests/milestone1_test.cpp)
 target_link_libraries(milestone1_test adic ${GMP_LIBRARY} ${MPFR_LIBRARY})
 add_test(NAME milestone1_test COMMAND milestone1_test 7 60)
 
-# Mathematical validation suite
-add_executable(validate_mathematics validate_mathematics.cpp)
-target_link_libraries(validate_mathematics adic ${GMP_LIBRARY} ${MPFR_LIBRARY})
-add_test(NAME validate_mathematics COMMAND validate_mathematics)
-
-# Interactive demo
-add_executable(interactive_demo interactive_demo.cpp)
-target_link_libraries(interactive_demo adic ${GMP_LIBRARY} ${MPFR_LIBRARY})
+# Examples (optional build)
+option(BUILD_EXAMPLES "Build example programs" ON)
+if(BUILD_EXAMPLES)
+    add_executable(validate_mathematics examples/validate_mathematics.cpp)
+    target_link_libraries(validate_mathematics adic ${GMP_LIBRARY} ${MPFR_LIBRARY})
+    add_test(NAME validate_mathematics COMMAND validate_mathematics)
+    
+    add_executable(interactive_demo examples/interactive_demo.cpp)
+    target_link_libraries(interactive_demo adic ${GMP_LIBRARY} ${MPFR_LIBRARY})
+endif()
 
 # Install rules
 install(TARGETS adic DESTINATION lib)

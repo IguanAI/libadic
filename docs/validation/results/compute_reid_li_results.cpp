@@ -171,7 +171,7 @@ public:
             numerator = numerator * BigInt(k);
         }
         
-        result = Qp(p, precision, Zp(p, precision, numerator));
+        result = Qp(Zp(p, precision, numerator));
         return result;
     }
     
