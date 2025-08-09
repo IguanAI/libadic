@@ -73,4 +73,4 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
-For detailed release notes, see [GitHub Releases](https://github.com/yourusername/libadic/releases).
+For detailed release notes, see [GitHub Releases](https://github.com/IguanAI/libadic/releases).

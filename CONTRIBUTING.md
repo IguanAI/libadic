@@ -18,12 +18,12 @@ libadic aims to be the definitive implementation of p-adic arithmetic for valida
 1. Fork the repository on GitHub
 2. Clone your fork locally:
    ```bash
-   git clone https://github.com/yourusername/libadic.git
+   git clone https://github.com/YOUR-USERNAME/libadic.git
    cd libadic
    ```
 3. Add the upstream repository:
    ```bash
-   git remote add upstream https://github.com/originalowner/libadic.git
+   git remote add upstream https://github.com/IguanAI/libadic.git
    ```
 
 ### Development Environment

@@ -5,7 +5,7 @@
 ### Option 1: Install from PPA (Recommended)
 ```bash
 # Add the libadic PPA
-sudo add-apt-repository ppa:your-username/libadic-stable
+sudo add-apt-repository ppa:IguanAI/libadic-stable
 sudo apt-get update
 
 # Install the library and development files
@@ -18,8 +18,8 @@ sudo apt-get install libadic-doc
 ### Option 2: Install from .deb Package
 ```bash
 # Download the latest release from GitHub
-wget https://github.com/yourusername/libadic/releases/download/v1.0.0/libadic_1.0.0-1_amd64.deb
-wget https://github.com/yourusername/libadic/releases/download/v1.0.0/libadic-dev_1.0.0-1_amd64.deb
+wget https://github.com/IguanAI/libadic/releases/download/v1.0.0/libadic_1.0.0-1_amd64.deb
+wget https://github.com/IguanAI/libadic/releases/download/v1.0.0/libadic-dev_1.0.0-1_amd64.deb
 
 # Install packages
 sudo dpkg -i libadic*.deb
@@ -36,7 +36,7 @@ sudo apt-get install libgmp-dev libmpfr-dev
 
 ### Build Debian Packages
 ```bash
-git clone https://github.com/yourusername/libadic.git
+git clone https://github.com/IguanAI/libadic.git
 cd libadic
 ./scripts/build_deb.sh
 ```
@@ -74,7 +74,7 @@ cd libadic
 
 ### Standard CMake Build
 ```bash
-git clone https://github.com/yourusername/libadic.git
+git clone https://github.com/IguanAI/libadic.git
 cd libadic
 mkdir build && cd build
 cmake .. -DCMAKE_BUILD_TYPE=Release
@@ -125,8 +125,8 @@ target_link_libraries(myapp libadic::adic)
 ## 🐳 Docker Installation
 
 ```bash
-docker pull yourusername/libadic:latest
-docker run -it yourusername/libadic:latest
+docker pull IguanAI/libadic:latest
+docker run -it IguanAI/libadic:latest
 ```
 
 ## 📋 Package Contents
@@ -191,7 +191,7 @@ See `packaging/PKGBUILD` (coming soon)
 
 ### macOS (Homebrew)
 ```bash
-brew tap yourusername/libadic
+brew tap IguanAI/libadic
 brew install libadic
 ```
 
@@ -201,8 +201,8 @@ libadic is distributed under the MIT License. The Debian packages maintain this 
 
 ## 🤝 Support
 
-- [GitHub Issues](https://github.com/yourusername/libadic/issues)
-- [Documentation](https://github.com/yourusername/libadic/tree/main/docs)
+- [GitHub Issues](https://github.com/IguanAI/libadic/issues)
+- [Documentation](https://github.com/IguanAI/libadic/tree/main/docs)
 
 ---
 

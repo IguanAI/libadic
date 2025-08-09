@@ -162,7 +162,7 @@ If you use this validation suite, please cite:
   title = {libadic: The Reference Implementation of the Reid-Li Criterion},
   author = {Smith, A. and Reid, M. and Li, W.},
   year = {2025},
-  url = {https://github.com/yourusername/libadic},
+  url = {https://github.com/IguanAI/libadic},
   note = {Validation suite proves mathematical uniqueness and necessity}
 }
 ```
@@ -170,8 +170,8 @@ If you use this validation suite, please cite:
 ## Contact
 
 For questions about the validation suite or Reid-Li criterion:
-- GitHub Issues: [libadic/issues](https://github.com/yourusername/libadic/issues)
-- Email: reid-li@yourdomain.com
+- GitHub Issues: [libadic/issues](https://github.com/IguanAI/libadic/issues)
+- Project Repository: [IguanAI/libadic](https://github.com/IguanAI/libadic)
 
 ---
 

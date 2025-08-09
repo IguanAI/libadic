@@ -61,7 +61,7 @@ sudo apt-get install -y \
     git
 
 # Step 2: Clone the repository
-git clone https://github.com/yourusername/libadic.git
+git clone https://github.com/IguanAI/libadic.git
 cd libadic
 
 # Step 3: Build the library

@@ -344,7 +344,7 @@ For independent verification, confirm:
 
 ## Contact for Verification
 
-- GitHub: https://github.com/yourusername/libadic
+- GitHub: https://github.com/IguanAI/libadic
 - Mathematical queries: Contact Reid & Li
 - Implementation queries: See CONTRIBUTING.md
 

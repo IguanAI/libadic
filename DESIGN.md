@@ -6,7 +6,7 @@ Excellent choice. A detailed design document is the essential first step to ensu
 
 **Version:** 1.0
 **Date:** October 26, 2023
-**Author(s):** [Your Name/Team Name], AI Assistant
+**Author(s):** IguanAI Team
 
 ### **1. Introduction**
 

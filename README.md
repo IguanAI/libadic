@@ -55,7 +55,7 @@ gamma = libadic.gamma_p(5, 7, 20)  # Γ_7(5)
 pip install libadic
 
 # Or build from source
-git clone https://github.com/yourusername/libadic.git
+git clone https://github.com/IguanAI/libadic.git
 cd libadic
 pip install .
 ```
@@ -175,7 +175,8 @@ MIT License - see LICENSE file for details.
 
 ## Authors
 
-- [Your Name]
+- IguanAI Team
+- Contributors on [GitHub](https://github.com/IguanAI/libadic/graphs/contributors)
 
 ## Acknowledgments
 
