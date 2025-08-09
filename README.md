@@ -1,343 +1,90 @@
-# libadic
+# libadic - High-Performance p-adic Arithmetic Library
 
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![C++17](https://img.shields.io/badge/C%2B%2B-17-blue.svg)](https://isocpp.org/std/the-standard)
-[![CMake](https://img.shields.io/badge/CMake-3.14%2B-blue.svg)](https://cmake.org/)
-[![License](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
-[![Docker](https://img.shields.io/badge/Docker-Ready-brightgreen.svg)](Dockerfile)
-[![Mathematical Proofs](https://img.shields.io/badge/Proofs-Verified-green.svg)](#mathematical-validation)
-[![Build Status](https://img.shields.io/badge/Build-Passing-brightgreen.svg)](#building)
+[![Python 3.8+](https://img.shields.io/badge/Python-3.8%2B-blue.svg)](https://www.python.org/)
 
-> **A high-performance C++ library for p-adic arithmetic, implementing groundbreaking mathematical algorithms for the Reid-Li Criterion - a novel approach to the Riemann Hypothesis.**
+A comprehensive C++ library with Python bindings for p-adic arithmetic, Dirichlet characters, and validation of the Reid-Li criterion for the Riemann Hypothesis.
 
-## 🎯 Project Overview
+## Features
 
-libadic is a mathematically rigorous implementation of p-adic number theory, designed to validate the Reid-Li Criterion. This library provides researchers with production-ready tools for exploring one of mathematics' most important unsolved problems.
+- **Complete p-adic arithmetic** - Zp (integers) and Qp (field) with explicit precision tracking
+- **Dirichlet characters** - Enumeration, evaluation, and arithmetic operations
+- **p-adic L-functions** - Kubota-Leopoldt L-functions and derivatives
+- **Special functions** - Morita's p-adic Gamma, p-adic logarithm, Bernoulli numbers
+- **Reid-Li validation** - Tools for verifying the Reid-Li criterion
+- **High performance** - Built on GMP/MPFR with optimized algorithms
+- **Python bindings** - Complete Python API via pybind11
 
-### Key Highlights
+## Quick Start
 
-- 🔢 **Complete p-adic arithmetic** with arbitrary precision via GMP
-- 📐 **Mathematically proven** algorithms with exhaustive validation
-- 🚀 **High performance** optimized C++17 implementation
-- 🐳 **Docker containerized** for reproducible research
-- ✅ **100% test coverage** with mathematical proof verification
-- 📊 **Precision tracking** at every computational step
+```python
+import libadic
 
-## 🏗️ Architecture
+# p-adic arithmetic
+x = libadic.Zp(7, 20, 15)  # 15 in Z_7 with precision O(7^20)
+y = libadic.Qp.from_rational(22, 7, 5, 20)  # 22/7 in Q_5
 
-```
-┌─────────────────────────────────────────────┐
-│          Application Layer                  │
-│    (Reid-Li Calculator, Test Programs)      │
-├─────────────────────────────────────────────┤
-│         High-Level API Layer                │
-│   (p-adic Gamma, L-functions, Logarithm)    │
-├─────────────────────────────────────────────┤
-│         Number Field Layer                  │
-│      (Qp, Zp, Cyclotomic, Characters)       │
-├─────────────────────────────────────────────┤
-│        Base Arithmetic Layer                │
-│    (GMP Wrapper, Modular Arithmetic)        │
-└─────────────────────────────────────────────┘
+# Dirichlet characters
+chars = libadic.enumerate_primitive_characters(7, 7)
+chi = chars[0]
+L_val = libadic.kubota_leopoldt(0, chi, 20)  # L_7(0, χ)
+
+# p-adic Gamma function
+gamma = libadic.gamma_p(5, 7, 20)  # Γ_7(5)
 ```
 
-## 🚀 Quick Start
+## Documentation
 
-### Using Docker (Recommended)
+### Core Documentation
+- [**User Guide**](docs/USER_GUIDE.md) - Complete tutorials with step-by-step examples
+- [**API Reference**](docs/API_REFERENCE.md) - Detailed API with working code examples  
+- [**Mathematical Reference**](docs/MATHEMATICAL_REFERENCE.md) - Proofs, algorithms, and numerical examples
+
+### Example Scripts
+- [**Reid-Li Complete Validation**](examples/reid_li_complete.py) - Full Reid-Li criterion implementation
+- [**Character Exploration**](examples/character_exploration.py) - Dirichlet character analysis
+- [**Precision Management**](examples/precision_management.py) - Precision tracking and optimization
+
+## Building from Source
 
 ```bash
-# Clone the repository
-git clone https://github.com/yourusername/libadic.git
-cd libadic
+# Install dependencies
+sudo apt-get install libgmp-dev libmpfr-dev python3-dev
 
-# Build and run with Docker
-docker-compose up -d
-docker-compose exec libadic bash
-
-# Inside container
-cd build && cmake .. && make -j$(nproc)
-ctest --verbose
-```
-
-### Local Installation
-
-#### Prerequisites
-
-- C++17 compatible compiler (GCC 7+, Clang 5+, MSVC 2017+)
-- CMake 3.14 or higher
-- GMP library (GNU Multiple Precision Arithmetic)
-- MPFR library (Multiple-Precision Floating-Point Reliable)
-
-#### Ubuntu/Debian
-```bash
-sudo apt-get update
-sudo apt-get install build-essential cmake libgmp-dev libmpfr-dev
-```
-
-#### macOS
-```bash
-brew install cmake gmp mpfr
-```
-
-#### Build Instructions
-```bash
+# Build
 mkdir build && cd build
-cmake -DCMAKE_BUILD_TYPE=Release ..
+cmake ..
 make -j$(nproc)
-make test
-```
 
-## 💻 Examples
-
-### Interactive Demo
-```bash
-./build/interactive_demo
-```
-Explore p-adic arithmetic, special functions, and the Reid-Li criterion interactively.
-
-### Quick Example
-```cpp
-#include <libadic/zp.h>
-#include <libadic/padic_gamma.h>
-
-using namespace libadic;
-
-// Compute Morita's p-adic Gamma function
-Zp gamma_5 = gamma_p(5, 7, 20);  // Γ_7(5) with precision O(7^20)
-std::cout << "Γ_7(5) = " << gamma_5.to_string() << std::endl;
-```
-
-## 📚 Documentation
-
-### Core Components
-
-#### `BigInt` - Arbitrary Precision Integers
-```cpp
-#include <libadic/gmp_wrapper.h>
-
-BigInt a("123456789012345678901234567890");
-BigInt b(42);
-BigInt c = a.pow(100) + b.factorial();
-```
-
-#### `Zp` - p-adic Integers
-```cpp
-#include <libadic/zp.h>
-
-Zp x(7, 20, 15);  // 15 in Z_7 with precision O(7^20)
-Zp y = x.sqrt();   // Hensel lifting for square roots
-Zp omega = x.teichmuller();  // Teichmüller representative
-```
-
-#### `Qp` - p-adic Numbers
-```cpp
-#include <libadic/qp.h>
-
-Qp rational = Qp::from_rational(2, 3, 7, 20);  // 2/3 in Q_7
-Qp sqrt_two = Qp(7, 20, 2).sqrt();
-assert(sqrt_two * sqrt_two == Qp(7, 20, 2));
-```
-
-#### Special Functions
-```cpp
-#include <libadic/padic_log.h>
-#include <libadic/padic_gamma.h>
-
-Qp log_val = log_p(Qp(7, 20, 1 + 7));  // p-adic logarithm
-Zp gamma_val = gamma_p(5, 7, 20);      // Morita's Gamma function
-```
-
-## 🧪 Testing & Validation
-
-### Mathematical Validation
-
-The library includes exhaustive mathematical proofs for:
-
-| Identity | Description | Test File |
-|----------|-------------|-----------|
-| **Geometric Series** | `(1-p)(1+p+p²+...) = 1` | `test_zp.cpp` |
-| **Fermat's Little Theorem** | `a^(p-1) ≡ 1 (mod p)` | `test_zp.cpp` |
-| **Wilson's Theorem** | `(p-1)! ≡ -1 (mod p)` | `test_functions.cpp` |
-| **Gamma Reflection** | `Γ_p(x)·Γ_p(1-x) = ±1` | `test_functions.cpp` |
-| **Hensel's Lemma** | Solution lifting | `test_zp.cpp` |
-| **Logarithm Convergence** | Series validation | `test_functions.cpp` |
-
-### Running Tests
-
-```bash
-# Run all tests with detailed output
+# Run tests
 ctest --verbose
-
-# Individual test suites
-./build/test_gmp_wrapper    # BigInt validation
-./build/test_zp             # p-adic integers
-./build/test_qp             # p-adic numbers
-./build/test_functions      # Special functions
-
-# Reid-Li Criterion validation (milestone test)
-./build/milestone1_test 7 60   # Prime p=7, precision O(p^60)
 ```
 
-### Test Coverage
+## Mathematical Background
 
-- ✅ **Unit Tests**: Every public method tested
-- ✅ **Integration Tests**: Cross-component validation
-- ✅ **Mathematical Proofs**: Identity verification
-- ✅ **Edge Cases**: Boundary conditions, overflow, convergence
-- ✅ **Performance Tests**: Precision tracking and optimization
+This library implements the Reid-Li criterion, which provides a p-adic approach to the Riemann Hypothesis through the identity:
 
-## 📊 Reid-Li Criterion
+- For odd characters: Φ_p^(odd)(χ) = L'_p(0, χ)
+- For even characters: Φ_p^(even)(χ) = L_p(0, χ)
 
-The milestone test validates the fundamental identity:
+## Contributing
 
-```
-Φ_p^(odd)(χ) = Ψ_p^(odd)(χ)   for odd Dirichlet characters
-Φ_p^(even)(χ) = Ψ_p^(even)(χ)  for even Dirichlet characters
-```
+Contributions are welcome! Please ensure:
+- Code compiles with `-Wall -Wextra -Wpedantic`
+- All tests pass
+- Mathematical correctness is maintained
 
-Where:
-- `Φ` involves sums of log Γ_p values
-- `Ψ` involves p-adic L-function values
+## License
 
-### ⚡ Unique Implementation
+MIT License - see LICENSE file for details.
 
-**libadic is the ONLY implementation of the Reid-Li criterion.** This has been formally proven through our validation suite. See [docs/validation/](docs/validation/) for:
-- Mathematical proof of uniqueness
-- Comparison showing other libraries cannot implement Reid-Li
-- Performance benchmarks
-- Challenge problems only libadic can solve
+## Authors
 
-### Validation Criteria
+- [Your Name]
 
-Phase 1 is complete when the identity holds for:
-- Primes: p = 5, 7, 11
-- Precision: O(p^60)
-- All primitive Dirichlet characters modulo p
+## Acknowledgments
 
-## 🔬 Mathematical Background
-
-### p-adic Numbers
-
-p-adic numbers form a completion of the rationals with respect to the p-adic norm:
-```
-|x|_p = p^(-v_p(x))
-```
-where `v_p(x)` is the p-adic valuation.
-
-### Convergence Conditions
-
-- **Logarithm**: Converges for `x ≡ 1 (mod p)` when p ≠ 2, or `x ≡ 1 (mod 4)` when p = 2
-- **Exponential**: Converges for `v_p(x) > 1/(p-1)`
-- **Gamma Function**: Defined for p-adic units
-
-## 🛠️ Development
-
-### Project Structure
-
-```
-libadic/
-├── include/libadic/       # Public headers
-│   ├── gmp_wrapper.h      # BigInt class
-│   ├── zp.h               # p-adic integers
-│   ├── qp.h               # p-adic numbers
-│   ├── padic_log.h        # Logarithm
-│   └── padic_gamma.h      # Gamma function
-├── src/                   # Implementation files
-│   ├── base/              # Core arithmetic
-│   ├── fields/            # Number fields
-│   └── functions/         # Special functions
-├── tests/                 # Test suites
-├── examples/              # Example programs
-│   ├── interactive_demo.cpp
-│   └── validate_mathematics.cpp
-├── scripts/               # Build and test scripts
-├── docs/                  # Documentation
-│   └── validation/        # Validation suite proving uniqueness
-├── CMakeLists.txt         # Build configuration
-├── Dockerfile             # Container definition
-└── docker-compose.yml     # Container orchestration
-```
-
-### Contributing
-
-We welcome contributions! Please see [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
-
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
-
-### Code Style
-
-- C++17 standard
-- Google C++ Style Guide with modifications
-- All public APIs must have comprehensive documentation
-- Every algorithm must include mathematical proof or reference
-
-## 📈 Performance
-
-### Benchmarks
-
-| Operation | Complexity | 100-digit | 1000-digit | 10000-digit |
-|-----------|------------|-----------|------------|-------------|
-| Addition | O(n) | < 1μs | < 10μs | < 100μs |
-| Multiplication | O(n²) | < 10μs | < 1ms | < 100ms |
-| Division | O(n²) | < 20μs | < 2ms | < 200ms |
-| Square Root (Hensel) | O(n²log n) | < 100μs | < 10ms | < 1s |
-| Logarithm (p-adic) | O(n³) | < 1ms | < 100ms | < 10s |
-
-*Benchmarks on Intel i7-9700K @ 3.6GHz*
-
-## 🔒 Security
-
-- No external network dependencies
-- Memory-safe RAII design
-- Comprehensive input validation
-- Constant-time operations where applicable
-
-## 📝 License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
-## 🌟 Acknowledgments
-
-- **GNU GMP Team** for the exceptional arbitrary precision library
-- **Mathematical Community** for p-adic number theory foundations
-- **Reid & Li** for the groundbreaking criterion approach
-
-## 📖 Publications & References
-
-1. Reid, M., & Li, W. (2023). "A Novel p-adic Approach to the Riemann Hypothesis"
-2. Koblitz, N. (1984). "p-adic Numbers, p-adic Analysis, and Zeta-Functions"
-3. Robert, A. (2000). "A Course in p-adic Analysis"
-4. Washington, L. (1997). "Introduction to Cyclotomic Fields"
-
-## 🤝 Support
-
-- **Issues**: [GitHub Issues](https://github.com/yourusername/libadic/issues)
-- **Discussions**: [GitHub Discussions](https://github.com/yourusername/libadic/discussions)
-- **Email**: libadic@yourdomain.com
-
-## 🚦 Project Status
-
-![Phase 1](https://img.shields.io/badge/Phase%201-Complete-brightgreen)
-![Phase 2](https://img.shields.io/badge/Phase%202-In%20Progress-yellow)
-![Phase 3](https://img.shields.io/badge/Phase%203-Planned-lightgrey)
-
-### Roadmap
-
-- [x] **Phase 1**: Core p-adic arithmetic and special functions
-- [ ] **Phase 2**: Complete L-function implementation
-- [ ] **Phase 3**: Global Reid-Li computation
-- [ ] **Phase 4**: Distributed computation framework
-- [ ] **Phase 5**: Formal verification with Coq/Lean
-
----
-
-<div align="center">
-
-**⭐ Star this repository to support mathematical research!**
-
-*"In mathematics, the art of proposing a question must be held of higher value than solving it."* - Georg Cantor
-
-</div>
+- GMP and MPFR developers
+- pybind11 community
+- Reid & Li for the mathematical framework

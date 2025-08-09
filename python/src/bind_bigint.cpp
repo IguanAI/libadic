@@ -37,7 +37,7 @@ void bind_bigint(py::module_ &m) {
             return py::int_(py::str(str));
         }, "Convert to Python integer")
         
-        .def("__str__", &BigInt::to_string, "String representation")
+        .def("__str__", [](const BigInt &self) { return self.to_string(); }, "String representation")
         .def("__repr__", [](const BigInt &self) {
             return "BigInt('" + self.to_string() + "')";
         })
