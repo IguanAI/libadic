@@ -35,31 +35,12 @@ Qp compute_phi_odd(const DirichletCharacter& chi, long p, long N) {
         Zp chi_a = chi.evaluate(a, N);
         
         if (!chi_a.is_zero()) {
-            // Compute Γ_p(a)
-            Zp gamma_val = gamma_p(a, p, N);
+            // Create Zp for a
+            Zp a_zp(p, N, a);
             
-            // Check if we can take logarithm (needs to be ≡ 1 mod p for p ≠ 2)
-            if (gamma_val.is_unit()) {
-                Zp gamma_mod_p = gamma_val.with_precision(1);
-                Zp one_mod_p(p, 1, 1);
-                
-                if (p == 2 || gamma_mod_p == one_mod_p) {
-                    // Can take logarithm
-                    Qp log_gamma = log_gamma_p(gamma_val);
-                    result += Qp(chi_a) * log_gamma;
-                } else {
-                    // Need to adjust by root of unity
-                    // Find k such that gamma_val^k ≡ 1 mod p
-                    for (long k = 1; k < p; ++k) {
-                        Zp gamma_k = gamma_val.pow(k);
-                        if (gamma_k.with_precision(1) == one_mod_p) {
-                            Qp log_gamma_k = log_gamma_p(gamma_k);
-                            result += Qp(chi_a) * log_gamma_k / Qp(p, N, k);
-                            break;
-                        }
-                    }
-                }
-            }
+            // Use PadicGamma::log_gamma which internally handles Iwasawa logarithm
+            Qp log_gamma = PadicGamma::log_gamma(a_zp);
+            result += Qp(chi_a) * log_gamma;
         }
     }
     
@@ -94,7 +75,7 @@ Qp compute_phi_even(const DirichletCharacter& chi, long p, long N) {
                 // Check if ≡ 1 (mod p) for convergence
                 if ((p != 2 && ratio_minus_one.valuation() >= 1) ||
                     (p == 2 && ratio_minus_one.valuation() >= 2)) {
-                    Qp log_term = log_p(ratio);
+                    Qp log_term = PadicLog::log(ratio);
                     result += Qp(chi_a) * log_term;
                 }
             }

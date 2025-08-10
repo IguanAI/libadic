@@ -1,4 +1,5 @@
 #include "libadic/l_functions.h"
+#include "libadic/padic_gamma.h"
 #include <cmath>
 #include <algorithm>
 
@@ -203,40 +204,13 @@ Qp LFunctions::compute_derivative_at_zero_odd(const DirichletCharacter& chi, lon
             Zp chi_a = chi.evaluate(a, precision);
             
             if (!chi_a.is_zero()) {
-                // Compute Γ_p(a) = (-1)^a * (a-1)!
-                Zp gamma_val = gamma_p(a, p, precision);
+                // Create Zp for a
+                Zp a_zp(p, precision, a);
                 
-                // Strategy: Since Γ_p(a) = (-1)^a * (a-1)!, we know its structure
-                // For a < p, (a-1)! is a unit, and (-1)^a gives us a sign
-                
-                // Check if gamma_val ≡ 1 (mod p) - safe for standard log
-                Zp gamma_mod_p = gamma_val.with_precision(1);
-                if (gamma_mod_p == Zp(p, 1, 1)) {
-                    // Standard case: γ ≡ 1 (mod p), so log is well-defined
-                    Qp log_gamma = log_gamma_p(gamma_val);
-                    sum = sum + Qp(chi_a) * log_gamma;
-                } else {
-                    // γ is not ≡ 1 (mod p)
-                    // For Γ_p(a) = (-1)^a * (a-1)!, when a is odd, we get -1 factor
-                    
-                    // MATHEMATICAL CHOICE: For Reid-Li, we use the convention that
-                    // log Γ_p(a) for odd a is computed via:
-                    // log Γ_p(a) = log((a-1)!) + log(-1)
-                    // where log(-1) is handled via the (p-1)-th root of unity
-                    
-                    // Compute γ^(p-1) which should be ≡ 1 (mod p) by Fermat
-                    Zp gamma_to_p_minus_1 = gamma_val.pow(p - 1);
-                    
-                    // Now this is safe to take log of
-                    if (gamma_to_p_minus_1.with_precision(1) == Zp(p, 1, 1)) {
-                        // log(γ^(p-1)) = (p-1) * log(γ) in the principal branch
-                        Qp log_gamma = log_p(Qp(gamma_to_p_minus_1)) / Qp(p, precision, p - 1);
-                        sum = sum + Qp(chi_a) * log_gamma;
-                    } else {
-                        // This shouldn't happen for valid Gamma values
-                        throw std::runtime_error("Unexpected Gamma value structure");
-                    }
-                }
+                // Use PadicGamma::log_gamma which internally handles Iwasawa logarithm
+                // This correctly handles roots of unity and all edge cases
+                Qp log_gamma = PadicGamma::log_gamma(a_zp);
+                sum = sum + Qp(chi_a) * log_gamma;
             }
         }
         
