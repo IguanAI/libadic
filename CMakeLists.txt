@@ -53,6 +53,7 @@ set_target_properties(adic PROPERTIES
     VERSION ${PROJECT_VERSION}
     SOVERSION 1
     PUBLIC_HEADER "${CMAKE_SOURCE_DIR}/include/libadic/*.h"
+    POSITION_INDEPENDENT_CODE ON  # Required for Python bindings
 )
 
 # Enable testing
