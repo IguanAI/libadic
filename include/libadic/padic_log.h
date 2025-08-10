@@ -25,10 +25,8 @@ private:
     }
     
     static long compute_required_terms(long /*p*/, long precision, long u_valuation) {
-        if (u_valuation <= 0) {
-            return precision * 2;
-        }
-        
+        // Deprecated heuristic; kept for ABI but unused by log().
+        if (u_valuation <= 0) return precision * 2;
         long terms = precision / u_valuation + 10;
         return std::min(terms, precision * 3L);
     }
@@ -58,13 +56,9 @@ public:
         long p = x.get_prime();
         long N = x.get_precision();
         
-        // Use higher working precision to compensate for precision loss
-        // Add extra precision based on how many times we'll divide by p
-        long p_divides_count = 0;
-        for (long n = p; n <= N * 2; n *= p) {
-            p_divides_count++;
-        }
-        long working_precision = N + p_divides_count + 5; // Add buffer for precision loss
+        // Use higher working precision to compensate for precision loss.
+        // Choose a generous buffer to ensure correctness mod p^2 for typical inputs.
+        long working_precision = N + 8;
         
         Qp one(p, working_precision, 1);
         Qp u = x.with_precision(working_precision) - one;
@@ -73,41 +67,32 @@ public:
             throw std::domain_error("p-adic logarithm does not converge: x must be ≡ 1 (mod p)");
         }
         
-        // For log(1+p), u = p which has valuation 1
-        long u_val = u.valuation();
-        long terms = compute_required_terms(p, working_precision, u_val);
+        Qp result(p, working_precision, 0);
+        Qp u_power = u;  // u^1
+        long n = 1;
         
-        // Start with first term directly instead of zero
-        if (terms < 1) {
-            return Qp(p, N, 0);
-        }
-        
-        // Use working precision for computation
-        Qp result = u;  // First term: u^1/1 = u
-        Qp u_power = u * u;  // Start with u^2
-        
-        for (long n = 2; n <= terms; ++n) {
-            Qp divisor(p, working_precision, n);
-            Qp term = u_power / divisor;
-            
-            if (term.valuation() >= working_precision) {
-                break;
-            }
-            
-            if (n % 2 == 1) {
+        while (true) {
+            Qp term = u_power / Qp(p, working_precision, n);
+            // Add with alternating signs: +, -, +, - ...
+            if ((n & 1) == 1) {
                 result = result + term;
             } else {
                 result = result - term;
             }
-            
-            u_power = u_power * u;
-            
-            if (u_power.valuation() >= working_precision) {
+            // Stop when further terms are beyond working precision
+            if (term.valuation() >= working_precision - 2) {
                 break;
             }
+            // Next power
+            u_power = u_power * u;
+            if (u_power.valuation() >= working_precision - 2) {
+                break;
+            }
+            ++n;
+            // Safety cap to avoid infinite loops
+            if (n > working_precision * 4) break;
         }
         
-        // Return result with requested precision
         return result.with_precision(N);
     }
     

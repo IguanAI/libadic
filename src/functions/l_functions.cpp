@@ -9,12 +9,37 @@ std::map<LFunctions::LKey, Qp> LFunctions::l_cache;
 std::map<LFunctions::LKey, Qp> LFunctions::l_derivative_cache;
 std::map<std::pair<long, long>, std::vector<Qp>> LFunctions::mahler_cache;
 
+static std::string fingerprint_character(const DirichletCharacter& chi) {
+    // Build a deterministic fingerprint from modulus, generators, orders, and values
+    std::string fp;
+    fp.reserve(128);
+    fp += std::to_string(chi.get_modulus());
+    fp += "|g:";
+    for (size_t i = 0; i < chi.generators.size(); ++i) {
+        fp += std::to_string(chi.generators[i]);
+        fp += ",";
+    }
+    fp += "|o:";
+    for (size_t i = 0; i < chi.generator_orders.size(); ++i) {
+        fp += std::to_string(chi.generator_orders[i]);
+        fp += ",";
+    }
+    fp += "|v:";
+    for (size_t i = 0; i < chi.character_values.size(); ++i) {
+        fp += std::to_string(chi.character_values[i]);
+        fp += ",";
+    }
+    return fp;
+}
+
 Qp LFunctions::kubota_leopoldt(long s, const DirichletCharacter& chi, long precision) {
     long p = chi.get_prime();
     long conductor = chi.get_conductor();
+    long modulus = chi.get_modulus();
+    std::string fp = fingerprint_character(chi);
     
     // Create cache key
-    LKey key{s, conductor, chi.evaluate_at(2), p, precision};
+    LKey key{s, p, precision, modulus, conductor, fp};
     if (l_cache.find(key) != l_cache.end()) {
         return l_cache[key];
     }
@@ -60,8 +85,8 @@ Qp LFunctions::kubota_leopoldt(long s, const DirichletCharacter& chi, long preci
         }
         
     } else if (s > 0) {
-        // For positive integers, use p-adic interpolation
-        result = compute_positive_value(s, chi, precision);
+        // Positive integer s not supported: naive series is invalid p-adically
+        throw std::invalid_argument("kubota_leopoldt(s>0) is not supported in this implementation");
     }
     
     l_cache[key] = result;
@@ -71,8 +96,10 @@ Qp LFunctions::kubota_leopoldt(long s, const DirichletCharacter& chi, long preci
 Qp LFunctions::kubota_leopoldt_derivative(long s, const DirichletCharacter& chi, long precision) {
     long p = chi.get_prime();
     long conductor = chi.get_conductor();
+    long modulus = chi.get_modulus();
+    std::string fp = fingerprint_character(chi);
     
-    LKey key{s, conductor, chi.evaluate_at(2), p, precision};
+    LKey key{s, p, precision, modulus, conductor, fp};
     if (l_derivative_cache.find(key) != l_derivative_cache.end()) {
         return l_derivative_cache[key];
     }
@@ -143,40 +170,30 @@ Qp LFunctions::compute_euler_factor(const DirichletCharacter& chi, long s, long 
     return one - Qp(chi_p) * p_power;
 }
 
-Qp LFunctions::compute_positive_value(long s, const DirichletCharacter& chi, long precision) {
-    long p = chi.get_prime();
-    // long conductor = chi.get_conductor();  // Reserved for future use
-    
-    // Number of terms needed for precision
-    long num_terms = precision * std::log(p) / std::log(2) + 10;
-    
-    Qp sum(p, precision, 0);
-    
-    // L(s, χ) = Σ_{n=1}^∞ χ(n)/n^s
-    // We compute partial sum and use acceleration techniques
-    for (long n = 1; n <= num_terms; ++n) {
-        if (n % p == 0) continue;  // Skip p-multiples for p-adic L-function
-        
-        Zp chi_n = chi.evaluate(n, precision);
-        if (!chi_n.is_zero()) {
-            // Compute n^s in p-adic
-            Qp n_power = Qp(p, precision, n).pow(s);
-            sum += Qp(chi_n) / n_power;
-        }
-    }
-    
-    // Apply Euler factor
-    Qp euler = compute_euler_factor(chi, s, precision);
-    return euler * sum;
+Qp LFunctions::compute_positive_value(long, const DirichletCharacter&, long) {
+    // This function is intentionally disabled; the naive series does not
+    // define a valid p-adic computation for positive s.
+    throw std::invalid_argument("compute_positive_value is not supported (invalid p-adic series for s>0)");
 }
 
 Qp LFunctions::compute_derivative_at_zero_odd(const DirichletCharacter& chi, long precision) {
     long p = chi.get_prime();
     long conductor = chi.get_conductor();
     
-    // For primitive characters mod p (Reid-Li case), we have a simpler formula
-    // L'_p(0, χ) = Σ_{a=1}^{p-1} χ(a) * log Γ_p(a)
-    // where we handle roots of unity properly
+    // MATHEMATICAL CONVENTION FOR L'_p(0, χ):
+    // =========================================
+    // For primitive odd characters χ mod p, we use the formula:
+    //   L'_p(0, χ) = Σ_{a=1}^{p-1} χ(a) * log Γ_p(a)
+    //
+    // KEY ISSUE: The p-adic logarithm of Γ_p(a) presents challenges because
+    // Γ_p(a) = (-1)^a * (a-1)! might not be ≡ 1 (mod p).
+    //
+    // APPROACH: We use the Iwasawa logarithm convention where:
+    // - For units u ≡ 1 (mod p): use standard p-adic log
+    // - For roots of unity: we need special handling
+    //
+    // NOTE: This implementation works for Reid-Li but may need adjustment
+    // for other applications requiring different branch choices.
     
     if (conductor == p && chi.is_primitive()) {
         Qp sum(p, precision, 0);
@@ -186,62 +203,38 @@ Qp LFunctions::compute_derivative_at_zero_odd(const DirichletCharacter& chi, lon
             Zp chi_a = chi.evaluate(a, precision);
             
             if (!chi_a.is_zero()) {
-                // Compute log Γ_p(a)
-                // Note: Γ_p(a) might not be ≡ 1 (mod p), so we need to handle carefully
-                
+                // Compute Γ_p(a) = (-1)^a * (a-1)!
                 Zp gamma_val = gamma_p(a, p, precision);
                 
-                // For log of a p-adic unit that might be a root of unity:
-                // If γ = ζ * u where ζ is a (p-1)-th root of unity and u ≡ 1 (mod p)
-                // Then log(γ) = log(ζ) + log(u)
-                // where log(ζ) = 2πik/(p-1) in the complex case
-                // In p-adic, we handle this using the extended logarithm
+                // Strategy: Since Γ_p(a) = (-1)^a * (a-1)!, we know its structure
+                // For a < p, (a-1)! is a unit, and (-1)^a gives us a sign
                 
-                // Check if gamma_val is congruent to 1 mod p
+                // Check if gamma_val ≡ 1 (mod p) - safe for standard log
                 Zp gamma_mod_p = gamma_val.with_precision(1);
-                Zp one_mod_p(p, 1, 1);
-                
-                if (gamma_mod_p == one_mod_p) {
-                    // Standard case: can take logarithm directly
+                if (gamma_mod_p == Zp(p, 1, 1)) {
+                    // Standard case: γ ≡ 1 (mod p), so log is well-defined
                     Qp log_gamma = log_gamma_p(gamma_val);
                     sum = sum + Qp(chi_a) * log_gamma;
                 } else {
-                    // gamma_val is a nontrivial root of unity times something ≡ 1 (mod p)
-                    // The p-adic Gamma function satisfies: Γ_p(n) = (-1)^n * (n-1)! for n ∈ {1,...,p-1}
+                    // γ is not ≡ 1 (mod p)
+                    // For Γ_p(a) = (-1)^a * (a-1)!, when a is odd, we get -1 factor
                     
-                    // We need to compute log Γ_p(a) properly
-                    // Use the fact that Γ_p(a) has a specific form
+                    // MATHEMATICAL CHOICE: For Reid-Li, we use the convention that
+                    // log Γ_p(a) for odd a is computed via:
+                    // log Γ_p(a) = log((a-1)!) + log(-1)
+                    // where log(-1) is handled via the (p-1)-th root of unity
                     
-                    // Extract the part that is ≡ 1 (mod p)
-                    // We can write gamma_val = ζ * u where ζ^(p-1) = 1 and u ≡ 1 (mod p)
+                    // Compute γ^(p-1) which should be ≡ 1 (mod p) by Fermat
+                    Zp gamma_to_p_minus_1 = gamma_val.pow(p - 1);
                     
-                    // Find the smallest k such that gamma_val^k ≡ 1 (mod p)
-                    long order = 1;
-                    Zp gamma_power = gamma_val;
-                    while (order < p && gamma_power.with_precision(1) != one_mod_p) {
-                        gamma_power = gamma_power * gamma_val;
-                        order++;
-                    }
-                    
-                    if (order == p - 1) {
-                        // gamma_val is a primitive (p-1)-th root of unity times u with u ≡ 1 (mod p)
-                        // So gamma_val^(p-1) ≡ 1 (mod p^2) at least
-                        Zp gamma_to_p_minus_1 = gamma_val.pow(p - 1);
-                        
-                        // Now gamma_to_p_minus_1 ≡ 1 (mod p), so we can take its log
-                        Qp log_u = log_p(Qp(gamma_to_p_minus_1)) / Qp(p, precision, p - 1);
-                        
-                        // The full logarithm includes the root of unity contribution
-                        // In the p-adic setting, we handle this using the principal branch
-                        sum = sum + Qp(chi_a) * log_u;
-                    } else {
-                        // gamma_val^order = 1 with order | (p-1)
-                        // So gamma_val^order is a higher power of p congruent to 1
-                        Zp gamma_to_order = gamma_val.pow(order);
-                        
-                        // Take log and divide by order
-                        Qp log_gamma = log_p(Qp(gamma_to_order)) / Qp(p, precision, order);
+                    // Now this is safe to take log of
+                    if (gamma_to_p_minus_1.with_precision(1) == Zp(p, 1, 1)) {
+                        // log(γ^(p-1)) = (p-1) * log(γ) in the principal branch
+                        Qp log_gamma = log_p(Qp(gamma_to_p_minus_1)) / Qp(p, precision, p - 1);
                         sum = sum + Qp(chi_a) * log_gamma;
+                    } else {
+                        // This shouldn't happen for valid Gamma values
+                        throw std::runtime_error("Unexpected Gamma value structure");
                     }
                 }
             }

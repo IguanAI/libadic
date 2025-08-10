@@ -138,4 +138,5 @@ DESIGN_v*.md
 *_DRAFT.md
 *_TODO.md
 *_NOTES.md
-.claude/
+.claude/.venv/
+libadic.egg-info/

@@ -76,6 +76,10 @@ add_executable(test_functions tests/test_functions.cpp)
 target_link_libraries(test_functions adic ${GMP_LIBRARY} ${MPFR_LIBRARY})
 add_test(NAME test_functions COMMAND test_functions)
 
+add_executable(test_math_validations tests/test_math_validations.cpp)
+target_link_libraries(test_math_validations adic ${GMP_LIBRARY} ${MPFR_LIBRARY})
+add_test(NAME test_math_validations COMMAND test_math_validations)
+
 # Milestone test
 add_executable(milestone1_test tests/milestone1_test.cpp)
 target_link_libraries(milestone1_test adic ${GMP_LIBRARY} ${MPFR_LIBRARY})

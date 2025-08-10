@@ -51,14 +51,22 @@ echo
 
 echo -e "${BLUE}Step 2: Building libadic Tests${NC}"
 echo "----------------------------------------"
-cd ../..
-mkdir -p build
-cd build
+(cd ../../ && cmake -B build -S . && make -C build -j$(nproc))
 
-# Build validation programs
-echo "Building validation programs..."
-cmake .. -DCMAKE_BUILD_TYPE=Release > /dev/null 2>&1
-make -j$(nproc) > /dev/null 2>&1
+echo -e "${GREEN}✓ Build successful${NC}"
+echo
+
+echo -e "${BLUE}Step 3: Running C++ Correctness Tests${NC}"
+echo "----------------------------------------"
+ctest --verbose
+echo -e "${GREEN}✓ C++ correctness tests passed${NC}"
+echo
+
+echo -e "${BLUE}Step 4: Running Python Correctness Tests${NC}"
+echo "----------------------------------------"
+python3 ../../tests/python/test_reid_li_criterion.py
+echo -e "${GREEN}✓ Python correctness tests passed${NC}"
+echo
 
 # Build benchmark
 echo "Building benchmark..."
@@ -72,16 +80,13 @@ g++ -std=c++17 -O3 -I../include ../validation/results/compute_reid_li_results.cp
 
 cd ../validation/validation_output
 
-echo -e "${GREEN}✓ Build successful${NC}"
-echo
-
-echo -e "${BLUE}Step 3: Running Performance Benchmarks${NC}"
+echo -e "${BLUE}Step 5: Running Performance Benchmarks${NC}"
 echo "----------------------------------------"
 ../../build/benchmark_libadic
 echo -e "${GREEN}✓ Benchmarks complete - results in benchmark_results.csv${NC}"
 echo
 
-echo -e "${BLUE}Step 4: Computing Reid-Li Scientific Results${NC}"
+echo -e "${BLUE}Step 6: Computing Reid-Li Scientific Results${NC}"
 echo "----------------------------------------"
 echo "Computing Reid-Li criterion for primes up to 97..."
 echo "(This is IMPOSSIBLE with any other library)"
@@ -89,7 +94,7 @@ echo "(This is IMPOSSIBLE with any other library)"
 echo -e "${GREEN}✓ Reid-Li computations complete${NC}"
 echo
 
-echo -e "${BLUE}Step 5: Generating Validation Report${NC}"
+echo -e "${BLUE}Step 7: Generating Validation Report${NC}"
 echo "----------------------------------------"
 
 # Create final report

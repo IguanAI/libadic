@@ -8,6 +8,7 @@
 #include "libadic/padic_gamma.h"
 #include <map>
 #include <cmath>
+#include <string>
 
 namespace libadic {
 
@@ -20,17 +21,19 @@ private:
     // Cache for computed L-values
     struct LKey {
         long s;
-        long conductor;
-        long char_id;
         long p;
         long precision;
+        long modulus;
+        long conductor;
+        std::string char_fingerprint;
         
         bool operator<(const LKey& other) const {
             if (s != other.s) return s < other.s;
-            if (conductor != other.conductor) return conductor < other.conductor;
-            if (char_id != other.char_id) return char_id < other.char_id;
             if (p != other.p) return p < other.p;
-            return precision < other.precision;
+            if (precision != other.precision) return precision < other.precision;
+            if (modulus != other.modulus) return modulus < other.modulus;
+            if (conductor != other.conductor) return conductor < other.conductor;
+            return char_fingerprint < other.char_fingerprint;
         }
     };
     

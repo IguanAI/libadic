@@ -259,6 +259,45 @@ void test_mahler_expansion() {
     test.require_all_passed();
 }
 
+void test_log_domain_assertions() {
+    TestFramework test("p-adic log domain assertions");
+
+    // Qp input must have valuation 0 and be congruent to 1 mod p
+    {
+        long p = 7; long N = 12;
+        bool threw = false;
+        try { (void)log_p(Qp(p, N, p)); } catch (const std::domain_error&) { threw = true; }
+        test.assert_true(threw, "log_p(p) throws (valuation != 0)");
+    }
+
+    {
+        long p = 11; long N = 12;
+        bool threw = false;
+        try { (void)log_p(Qp(p, N, 2)); } catch (const std::domain_error&) { threw = true; }
+        test.assert_true(threw, "log_p(2) throws (not ≡ 1 mod p)");
+    }
+
+    // Zp log_unit requires unit ≡ 1 (mod p)
+    {
+        long p = 5; long N = 10;
+        bool threw = false;
+        try { (void)log_p(Zp(p, N, 2)); } catch (const std::domain_error&) { threw = true; }
+        test.assert_true(threw, "log_p(Zp(2)) throws (unit not 1 mod p)");
+    }
+
+    // Valid cases succeed
+    {
+        long p = 5; long N = 12;
+        Qp ok = log_p(Qp(p, N, 1 + p));
+        test.assert_true(ok.valuation() >= 1, "log_p(1+p) defined and v>=1");
+        Qp ok2 = log_p(Zp(p, N, 1 + 2*p));
+        test.assert_true(ok2.valuation() >= 1, "log_p(Zp(1+2p)) defined and v>=1");
+    }
+
+    test.report();
+    test.require_all_passed();
+}
+
 void test_convergence_radius() {
     TestFramework test("Series Convergence Radius");
     
@@ -310,6 +349,7 @@ int main() {
     test_log_gamma_composition();
     test_wilson_theorem();
     test_log_additivity();
+    test_log_domain_assertions();
     test_mahler_expansion();
     test_convergence_radius();
     

@@ -48,6 +48,13 @@ gamma = libadic.gamma_p(5, 7, 20)  # Γ_7(5)
 
 ## Installation
 
+### Prerequisites
+
+- **CMake** (≥ 3.15) - Required for building
+- **C++17 compiler** (GCC 7+, Clang 5+, or MSVC 2017+)
+- **GMP library** - GNU Multiple Precision Arithmetic
+- **Python 3.7+** - For Python bindings
+
 ### Python Package (Recommended)
 
 ```bash
@@ -63,8 +70,11 @@ pip install .
 ### Building from Source (C++ Library + Python Bindings)
 
 ```bash
-# Install dependencies
-sudo apt-get install libgmp-dev libmpfr-dev python3-dev
+# Install dependencies (Ubuntu/Debian)
+sudo apt-get install cmake libgmp-dev libmpfr-dev python3-dev
+
+# macOS
+brew install cmake gmp mpfr python
 
 # Build C++ library and Python bindings
 mkdir build && cd build

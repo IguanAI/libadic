@@ -250,11 +250,8 @@ long DirichletCharacter::evaluate_at(long n) const {
     }
     
     // Now χ(n) = ζ_{total_denominator}^{total_numerator}
-    // We return a pair encoded as: denominator * modulus + numerator
-    // This allows us to recover both the order and the exponent
-    
-    // Actually, for compatibility with existing code, return the value mod modulus
-    // that represents this root of unity
+    // Return the value mod modulus that represents this root of unity
+    // for compatibility with existing code
     
     if (total_numerator == 0) {
         return 1;  // χ(n) = 1
@@ -333,7 +330,8 @@ Cyclotomic DirichletCharacter::evaluate_cyclotomic(long n, long precision) const
     
     long chi_n = evaluate_at(n);
     
-    if (chi_n == 0) {
+    // χ(n) = 0 is encoded by sentinel value -1 from evaluate_at
+    if (chi_n == -1) {
         return Cyclotomic(prime, precision);
     }
     
@@ -362,16 +360,14 @@ bool DirichletCharacter::is_even() const {
 
 bool DirichletCharacter::is_odd() const {
     // χ is odd if χ(-1) = -1
-    // In (Z/pZ)*, -1 ≡ p-1 (mod p)
-    // χ(-1) = -1 means χ(-1)^2 = 1 but χ(-1) ≠ 1
+    // The value χ(-1) is either 1 or a square root of 1
     long chi_minus_one = evaluate_at(-1);
     
     if (chi_minus_one == 1) return false;  // Even character
     if (chi_minus_one == -1) return false; // This means gcd(-1, modulus) ≠ 1, impossible
     
-    // Check if chi_minus_one is -1 mod p
-    // -1 ≡ p-1 (mod p), but we need to check if it's a square root of 1
-    // χ(-1)^2 should equal 1
+    // Check if chi_minus_one is -1 in the multiplicative group
+    // χ(-1)^2 should equal 1 (since χ(-1) must be ±1)
     long chi_squared = pow_mod(chi_minus_one, 2, modulus);
     return chi_squared == 1 && chi_minus_one != 1;
 }
@@ -392,14 +388,15 @@ long DirichletCharacter::get_order() const {
     
     long order = 1;
     for (size_t i = 0; i < character_values.size(); ++i) {
-        if (character_values[i] != 0) {
-            // Find order of character_values[i] in Z/generator_orders[i]Z
-            for (long k = 1; k <= generator_orders[i]; ++k) {
-                if (pow_mod(character_values[i], k, generator_orders[i]) == 1) {
-                    order = std::lcm(order, k);
-                    break;
-                }
-            }
+        long k_i = character_values[i];  // χ(g_i) = ζ_{d_i}^{k_i}
+        long d_i = generator_orders[i];  // Order of g_i in (Z/nZ)*
+        
+        if (k_i != 0) {
+            // The order of ζ_d^k is d/gcd(d,k)
+            // This is because (ζ_d^k)^m = 1 iff d | km iff d/gcd(d,k) | m
+            long g = std::gcd(d_i, k_i);
+            long char_order_i = d_i / g;
+            order = std::lcm(order, char_order_i);
         }
     }
     

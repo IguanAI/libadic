@@ -1,9 +1,10 @@
 #ifndef LIBADIC_PADIC_GAMMA_H
 #define LIBADIC_PADIC_GAMMA_H
 
-#include "libadic/zp.h"
-#include "libadic/qp.h"
-#include "libadic/padic_log.h"
+#include "zp.h"
+#include "qp.h"
+#include "padic_log.h"
+#include "iwasawa_log.h"
 #include <vector>
 
 namespace libadic {
@@ -110,19 +111,36 @@ public:
         BigInt p_power = BigInt(p).pow(precision);
         
         if (n % p == 0) {
+            // Standard convention: Γ_p(n) = 1 when p | n
+            // This is consistent with the product formula
             return Zp(p, precision, 1);
         }
         
-        BigInt result = factorial_mod(n - 1, p_power);
-        
-        // Morita's Gamma: Γ_p(n) = (-1)^n * (n-1)!
-        BigInt sign = (n % 2 == 0) ? BigInt(1) : BigInt(-1);
-        result = (result * sign) % p_power;
-        if (result.is_negative()) {
-            result += p_power;
+        // For n < p: use standard factorial
+        if (n < p) {
+            // Morita's Gamma: Γ_p(n) = (-1)^n * (n-1)!
+            BigInt result = factorial_mod(n - 1, p_power);
+            
+            // Apply the sign
+            BigInt sign = (n % 2 == 0) ? BigInt(1) : BigInt(-1);
+            result = (result * sign) % p_power;
+            if (result.is_negative()) {
+                result += p_power;
+            }
+            
+            return Zp(p, precision, result);
         }
         
-        return Zp(p, precision, result);
+        // For n >= p: We need to handle this differently
+        // Γ_p(n) = Γ_p(n mod p) for n not divisible by p
+        // This follows from the distribution property
+        long n_reduced = n % p;
+        if (n_reduced == 0) {
+            return Zp(p, precision, 1);
+        }
+        
+        // Compute Γ_p(n_reduced)
+        return gamma_positive_integer(n_reduced, p, precision);
     }
     
     static bool verify_reflection_formula(const Zp& x, long tolerance_precision) {
@@ -156,25 +174,16 @@ public:
             throw std::domain_error("log Gamma_p requires a unit");
         }
         
-        Zp gamma_val = gamma(x);
-        
-        Zp one(p, N, 1);
-        Zp congruent = gamma_val.with_precision(1);
-        
-        if (p != 2 && congruent != one.with_precision(1)) {
-            long root_order = p - 1;
-            for (long k = 1; k < root_order; ++k) {
-                if (gamma_val.pow(k) == one) {
-                    root_order = k;
-                    break;
-                }
-            }
-            
-            Zp adjusted = gamma_val.pow(root_order);
-            return PadicLog::log(Qp(adjusted)) / Qp(p, N, root_order);
+        // For positive integers a < p, use the direct formula
+        BigInt x_val = x.to_bigint() % BigInt(p);
+        if (!x_val.is_negative() && x_val > BigInt(0) && x_val < BigInt(p)) {
+            long a = x_val.to_long();
+            return IwasawaLog::log_gamma_direct(a, p, N);
         }
         
-        return PadicLog::log(Qp(gamma_val));
+        // For other values, compute gamma first then use Iwasawa log
+        Zp gamma_val = gamma(x);
+        return IwasawaLog::log_iwasawa(gamma_val);
     }
     
     static std::vector<Zp> compute_gamma_values(long p, long precision, long count) {
